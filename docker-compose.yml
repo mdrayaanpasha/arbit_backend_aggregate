@@ -1,28 +1,103 @@
 services:
+  # ---------- Infrastructure ----------
+  kafka:
+    image: apache/kafka:3.9.0
+    restart: unless-stopped
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: arbit
+      POSTGRES_PASSWORD: arbit_dev_password
+      POSTGRES_DB: arbit
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U arbit"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------- Application services ----------
   producer:
     build: ./FIN_PIP_SERVER_1
     restart: unless-stopped
-    env_file: .env
+    environment:
+      KAFKA_URL: kafka:9092
+      REDIS_URL: redis://redis:6379
     ports:
       - "3000:3000"
+    depends_on:
+      kafka: { condition: service_healthy }
+      redis: { condition: service_healthy }
 
   consumer:
     build: ./FIN_PIP_SERVER_2
     restart: unless-stopped
-    env_file: .env
+    environment:
+      KAFKA_URL: kafka:9092
+      REDIS_URL: redis://redis:6379
     ports:
       - "3001:3001"
+    depends_on:
+      kafka: { condition: service_healthy }
+      redis: { condition: service_healthy }
 
   indicators:
     build: ./FIN_PIP_SERVER_3
     restart: unless-stopped
-    env_file: .env
+    environment:
+      KAFKA_URL: kafka:9092
+      REDIS_URL: redis://redis:6379
     ports:
       - "3002:3002"
+    depends_on:
+      kafka: { condition: service_healthy }
+      redis: { condition: service_healthy }
 
   persistence:
     build: ./FIN_PIP_SERVER_4
     restart: unless-stopped
-    env_file: .env
+    environment:
+      KAFKA_URL: kafka:9092
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql://arbit:arbit_dev_password@postgres:5432/arbit
+    command: sh -c "npx prisma db push && node index.js"
     ports:
       - "3003:3003"
+    depends_on:
+      kafka: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      postgres: { condition: service_healthy }
+
+volumes:
+  pgdata:
