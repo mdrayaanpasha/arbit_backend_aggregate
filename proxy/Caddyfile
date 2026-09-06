@@ -1,17 +1,16 @@
 {
-	# Let's Encrypt will email expiry/security notices here
-	email dipanshu.refers@gmail.com
-	# Prove domain ownership via Cloudflare DNS (no inbound 80/443 challenge needed)
-	acme_dns cloudflare {env.CF_API_TOKEN}
+	# TLS is terminated at Cloudflare's edge and carried over the encrypted
+	# tunnel, so Caddy just does internal HTTP host/path routing.
+	auto_https off
 }
 
 # ---------- Quantiva (existing app) ----------
-api-quantiva.rayaanpasha.dev {
+http://api-quantiva.rayaanpasha.dev {
 	reverse_proxy quantiva_s1:3000
 }
 
 # ---------- ARBIT financial pipeline ----------
-api-arbit.rayaanpasha.dev {
+http://api-arbit.rayaanpasha.dev {
 	handle /order* {
 		reverse_proxy producer:3000
 	}
@@ -27,7 +26,6 @@ api-arbit.rayaanpasha.dev {
 	handle /data* {
 		reverse_proxy persistence:3003
 	}
-	# anything else
 	handle {
 		respond "ARBIT API — try /data, /indicators, /anomalies, /order" 200
 	}

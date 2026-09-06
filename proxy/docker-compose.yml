@@ -1,16 +1,21 @@
 services:
   caddy:
-    build: .
+    image: caddy:2
     container_name: caddy_proxy
     restart: unless-stopped
-    env_file: .env
-    ports:
-      - "80:80"
-      - "443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
+    networks:
+      - web
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    env_file: .env          # provides TUNNEL_TOKEN
     networks:
       - web
 
