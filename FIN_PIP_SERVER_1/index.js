@@ -50,7 +50,7 @@ app.post('/order', async (req, res) => {
 app.listen(3000, () => console.log('Producer on 3000'));
 
 
-cron.schedule("*/1 * * * *", async () => {
+cron.schedule("0 * * * *", async () => {
   const data = await fetchAll();
   await client.setEx('latest_ohlcv', 600, JSON.stringify(data));
 

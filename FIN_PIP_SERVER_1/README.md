@@ -1,7 +1,7 @@
 
 # OHLCV Producer
 
-Scheduled microservice in a distributed financial data pipeline. Fetches market data every minute, caches it in Redis, and fan-outs Kafka notifications to three downstream consumers.
+Scheduled microservice in a distributed financial data pipeline. Fetches market data every hour, caches it in Redis, and fan-outs Kafka notifications to three downstream consumers.
 
 ---
 
@@ -25,7 +25,7 @@ Downstream consumers receive a pointer, then pull from Redis directly — avoids
 | Layer     | Technology              |
 |-----------|-------------------------|
 | Runtime   | Node.js 20+ (ESM)       |
-| Scheduler | node-cron (every 1 min) |
+| Scheduler | node-cron (every 1 hour) |
 | Messaging | Kafka (SSL/SASL via Aiven) |
 | Cache     | Redis (cache-aside)     |
 | HTTP      | Express (manual trigger endpoint) |
