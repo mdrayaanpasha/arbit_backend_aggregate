@@ -1,8 +1,9 @@
 services:
   caddy:
-    image: caddy:2
+    build: .
     container_name: caddy_proxy
     restart: unless-stopped
+    env_file: .env
     ports:
       - "80:80"
       - "443:443"

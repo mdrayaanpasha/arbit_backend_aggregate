@@ -1,6 +1,8 @@
 {
 	# Let's Encrypt will email expiry/security notices here
 	email dipanshu.refers@gmail.com
+	# Prove domain ownership via Cloudflare DNS (no inbound 80/443 challenge needed)
+	acme_dns cloudflare {env.CF_API_TOKEN}
 }
 
 # ---------- Quantiva (existing app) ----------
