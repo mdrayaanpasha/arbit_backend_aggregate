@@ -4,12 +4,12 @@
 }
 
 # ---------- Quantiva (existing app) ----------
-QUANTIVA_DOMAIN {
+api-quantiva.rayaanpasha.dev {
 	reverse_proxy quantiva_s1:3000
 }
 
 # ---------- ARBIT financial pipeline ----------
-ARBIT_DOMAIN {
+api-arbit.rayaanpasha.dev {
 	handle /order* {
 		reverse_proxy producer:3000
 	}
