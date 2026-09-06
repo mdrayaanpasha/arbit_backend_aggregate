@@ -1,0 +1,32 @@
+{
+	# Let's Encrypt will email expiry/security notices here
+	email dipanshu.refers@gmail.com
+}
+
+# ---------- Quantiva (existing app) ----------
+QUANTIVA_DOMAIN {
+	reverse_proxy quantiva_s1:3000
+}
+
+# ---------- ARBIT financial pipeline ----------
+ARBIT_DOMAIN {
+	handle /order* {
+		reverse_proxy producer:3000
+	}
+	handle /anomalies* {
+		reverse_proxy consumer:3001
+	}
+	handle /baseline* {
+		reverse_proxy consumer:3001
+	}
+	handle /indicators* {
+		reverse_proxy indicators:3002
+	}
+	handle /data* {
+		reverse_proxy persistence:3003
+	}
+	# anything else
+	handle {
+		respond "ARBIT API — try /data, /indicators, /anomalies, /order" 200
+	}
+}
