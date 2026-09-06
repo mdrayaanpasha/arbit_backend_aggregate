@@ -1,0 +1,28 @@
+services:
+  producer:
+    build: ./FIN_PIP_SERVER_1
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "3000:3000"
+
+  consumer:
+    build: ./FIN_PIP_SERVER_2
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "3001:3001"
+
+  indicators:
+    build: ./FIN_PIP_SERVER_3
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "3002:3002"
+
+  persistence:
+    build: ./FIN_PIP_SERVER_4
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "3003:3003"
